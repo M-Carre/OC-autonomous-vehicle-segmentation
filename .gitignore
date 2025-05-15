@@ -172,3 +172,13 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Custom Ignores for this Project
+# -------------------------------
+# Ignore large datasets if they were ever placed inside the project directory
+data/
+cityscapes_data/ # Ou un nom de dossier spécifique que vous utiliseriez pour les données brutes
+raw_data/
+
+# MLflow local tracking data (if not configured to a remote server)
+mlruns/
