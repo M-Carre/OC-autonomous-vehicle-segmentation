@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.venv/
+tf_api_env/  # Votre environnement virtuel local
+fastapi_env/ # Si vous en avez un autre
+.git/
+.gitignore
+.dockerignore
+mlruns/ # Si vous avez des logs MLflow locaux
+mlflow_tracking_persistent/ # Si vous avez des logs MLflow locaux
+notebooks/ # Probablement pas besoin dans l'image API
+webapp/    # Pas besoin pour l'image API
+reports/   # Pas besoin pour l'image API
+# Ajoutez d'autres fichiers/dossiers à ignorer

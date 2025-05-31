@@ -1,5 +1,6 @@
 fastapi
 uvicorn[standard]
+gunicorn
 tensorflow
 numpy
 opencv-python-headless
