@@ -5,7 +5,7 @@ import io
 import os # Ajouté pour lister les fichiers
 
 # --- Configuration ---
-API_URL = "http://127.0.0.1:8000/predict/"
+API_URL = "http://MonAPIsegmentationUnique.azurewebsites.net/predict/"
 SAMPLE_IMAGE_DIR = "sample_test_images" # Chemin vers votre dossier d'images d'exemple
 
 # --- Fonctions Utilitaires ---

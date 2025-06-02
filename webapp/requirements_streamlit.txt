@@ -1,0 +1,5 @@
+# webapp/requirements_streamlit.txt
+streamlit
+requests
+Pillow  # Bien que l'API retourne une image, st.image peut utiliser Pillow. Inclus par sécurité.
+# Ajoutez d'autres bibliothèques si votre app_streamlit.py en utilise (ex: numpy si vous faites des manips)
