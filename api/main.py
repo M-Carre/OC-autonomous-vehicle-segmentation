@@ -21,7 +21,7 @@ PROJECT_ROOT = os.path.dirname(API_DIR)
 
 # Construire le chemin vers le modèle
 MODEL_NAME = "UNetMini_DevSet_NoAug_AggressiveCB_best.keras"
-MODEL_PATH = os.path.join(PROJECT_ROOT, "models", MODEL_NAME)
+MODEL_PATH = "models/UNetMini_DevSet_NoAug_AggressiveCB_best.keras"
 
 print(f"Chemin absolu calculé pour le modèle : {MODEL_PATH}") # Pour débogage
 
@@ -188,17 +188,33 @@ CUSTOM_OBJECTS = {
 
 
 @app.on_event("startup") # Événement exécuté au démarrage de FastAPI
+
 async def load_application_model():
     global model
     try:
-        print(f"Chargement du modèle depuis : {MODEL_PATH}")
-        model = tf.keras.models.load_model(MODEL_PATH, custom_objects=CUSTOM_OBJECTS)
+        print(f"Chargement du modèle depuis : {MODEL_PATH}") # Affiche le chemin utilisé
+        # AJOUTEZ CECI POUR DÉBOGAGE :
+        print(f"Répertoire de travail actuel (au chargement) : {os.getcwd()}")
+        print(f"Chemin absolu tenté pour le modèle : {os.path.abspath(MODEL_PATH)}")
+        if not os.path.exists(MODEL_PATH):
+            print(f"ERREUR : Le fichier modèle N'EXISTE PAS à {os.path.abspath(MODEL_PATH)}")
+            # Lister le contenu de /app et /app/models pour voir ce qui est là
+            print("Contenu de /app :")
+            os.system("ls -l /app")
+            print("Contenu de /app/models :")
+            os.system("ls -l /app/models")
+
+        model = tf.keras.models.load_model(MODEL_PATH, 
+                                           custom_objects=CUSTOM_OBJECTS, 
+                                           compile=False) # compile=False car nous n'avons pas besoin de compiler le modèle ici,
         model.summary() # Pour vérifier qu'il est chargé
         print("Modèle chargé avec succès !")
     except Exception as e:
-        print(f"ERREUR lors du chargement du modèle : {e}")
-        # Gérer l'erreur - l'API pourrait ne pas être fonctionnelle
-        model = None 
+        print(f"ERREUR lors du chargement du modèle : {e}") # CE MESSAGE DEVRAIT APPARAÎTRE DANS VOS LOGS DOCKER
+        print(traceback.format_exc()) # Affiche la trace complète de l'erreur
+        model = None
+
+    
 
 @app.get("/")
 async def read_root():

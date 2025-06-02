@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir -r requirements_api.txt
 
 # 4. Copier le code source de l'API
 # Copie le contenu du dossier 'api' (du contexte de build) vers '/app' dans l'image
-COPY api/ /app/
+COPY api/main.py /app/main.py 
 
 # 5. Copier les modèles
 # Copie le contenu du dossier 'models' (de la racine du contexte de build)

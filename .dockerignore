@@ -1,19 +1,50 @@
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-*.venv/
-tf_api_env/  # Votre environnement virtuel local
-fastapi_env/ # Si vous en avez un autre
+# Git
 .git/
 .gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
 .dockerignore
-mlruns/ # Si vous avez des logs MLflow locaux
-mlflow_tracking_persistent/ # Si vous avez des logs MLflow locaux
-notebooks/ # Probablement pas besoin dans l'image API
-webapp/    # Pas besoin pour l'image API
-reports/   # Pas besoin pour l'image API
-# Ajoutez d'autres fichiers/dossiers à ignorer
+
+# Environnements virtuels
+.venv/
+env/
+venv/
+tf_api_env/
+fastapi_env/
+*/env/
+*/venv/
+*/*venv/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Fichiers OS
+.DS_Store
+Thumbs.db
+
+# MLflow (si logs locaux)
+mlruns/
+mlflow_tracking_persistent/ # Si vous aviez cela à la racine
+
+# Notebooks et rapports (généralement pas dans l'image API)
+notebooks/
+reports/
+
+# Datasets (NE JAMAIS METTRE DANS L'IMAGE)
+data/
+P8_Cityscapes_leftImg8bit_trainvaltest/
+P8_Cityscapes_gtFine_trainvaltest/
+*_subset/
+
+# Fichiers de configuration IDE/éditeur
+.vscode/
+.idea/
+
+# Fichiers temporaires ou de build
+*.egg-info/
+dist/
+build/
