@@ -1,0 +1,103 @@
+# .github/workflows/deploy_api_to_azure.yml
+
+name: Build, Test, and Deploy FastAPI API to Azure
+
+on:
+  push:
+    branches:
+      - main # Se déclenche sur un push vers la branche main
+    paths: # Se déclenche uniquement si des fichiers dans ces chemins sont modifiés
+      - 'api/**'
+      - 'models/**' 
+      - '.github/workflows/deploy_api_to_azure.yml'
+      - 'Dockerfile' # Assurez-vous que c'est le Dockerfile de l'API si vous en avez plusieurs
+      # Il est possible que le Dockerfile soit à la racine ou dans api/Dockerfile
+      # Adaptez ce chemin ou le DOCKERFILE_PATH ci-dessous en conséquence.
+
+env:
+  AZURE_RESOURCE_GROUP: MonGroupeRessourcesP8          # VOTRE GROUPE DE RESSOURCES
+  AZURE_APP_SERVICE_NAME: MonAPIsegmentationUnique    # VOTRE NOM D'APP SERVICE POUR L'API
+  ACR_LOGIN_SERVER: monregistreapip8unique.azurecr.io # VOTRE ACR LOGIN SERVER
+  ACR_REPOSITORY_NAME: mon-api-segmentation         # Nom de l'image/dépôt dans ACR
+  DOCKERFILE_PATH: ./Dockerfile                     # CHEMIN VERS VOTRE DOCKERFILE (depuis la racine du repo)
+                                                    # Si votre Dockerfile est à la racine, c'est bon.
+                                                    # S'il est dans 'api/Dockerfile', mettez 'api/Dockerfile'.
+  IMAGE_TAG: ${{ github.sha }}                      # Utilise le SHA du commit comme tag
+  PYTHON_VERSION: '3.10'                            # Version Python pour les tests
+
+jobs:
+  build_test_and_deploy_api:
+    runs-on: ubuntu-latest 
+
+    steps:
+      - name: Checkout du code source
+        uses: actions/checkout@v3
+
+      - name: Configuration de Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Installation des dépendances (pour API et tests)
+        run: |
+          python -m pip install --upgrade pip
+          # Installer depuis le requirements.txt de l'API qui doit inclure pytest et httpx
+          if [ -f api/requirements_api.txt ]; then
+            pip install -r api/requirements_api.txt
+          else
+            echo "api/requirements_api.txt not found!"
+            exit 1
+          fi
+          # Si vous avez un requirements_test.txt séparé, installez-le aussi
+          # pip install pytest pytest-cov httpx # Ou installez-les explicitement si pas dans requirements_api.txt
+
+      - name: Exécution des tests unitaires avec Pytest
+        run: |
+          # Assurez-vous que cette commande lance bien vos tests.
+          # Si vos tests nécessitent que le répertoire de travail soit la racine du projet :
+          pytest api/tests/ -v 
+          # Ou si pytest doit être lancé depuis le dossier api/ :
+          # cd api
+          # pytest tests/ -v
+        # Si les tests échouent, le workflow s'arrêtera ici par défaut.
+
+      # --- Les étapes suivantes ne s'exécutent que si les tests (et étapes précédentes) réussissent ---
+
+      - name: Connexion à Azure
+        if: success() # S'exécute seulement si les tests ont réussi
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }} # Le secret que vous avez configuré dans GitHub
+
+      - name: Connexion à Azure Container Registry (ACR)
+        if: success()
+        # Utilise le token de la session Azure CLI (recommandé)
+        # Assurez-vous que le Principal de Service a le rôle 'AcrPush' sur l'ACR
+        run: |
+          TOKEN=$(az acr login --name ${{ env.ACR_LOGIN_SERVER }} --expose-token --output tsv --query accessToken)
+          docker login ${{ env.ACR_LOGIN_SERVER }} -u 00000000-0000-0000-0000-000000000000 --password-stdin <<< $TOKEN
+
+      - name: Construire et Pousser l'image Docker vers ACR
+        if: success()
+        run: |
+          docker build -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY_NAME }}:${{ env.IMAGE_TAG }} -f ${{ env.DOCKERFILE_PATH }} .
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY_NAME }}:${{ env.IMAGE_TAG }}
+          
+          # Optionnel : Pousser aussi un tag 'latest'
+          docker tag ${{ env.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY_NAME }}:${{ env.IMAGE_TAG }} ${{ env.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY_NAME }}:latest
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY_NAME }}:latest
+
+      - name: Déployer sur Azure App Service
+        if: success()
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_APP_SERVICE_NAME }}
+          images: '${{ env.ACR_LOGIN_SERVER }}/${{ env.ACR_REPOSITORY_NAME }}:${{ env.IMAGE_TAG }}'
+          # slot-name: 'production' # Si vous utilisez des slots de déploiement
+
+      - name: Déconnexion d'Azure
+        if: always() # S'exécute toujours, même si les étapes précédentes échouent, pour nettoyer la session
+        run: |
+          az logout
+          az cache purge
+          az account clear
