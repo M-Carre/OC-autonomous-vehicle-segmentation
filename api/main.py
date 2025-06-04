@@ -21,7 +21,7 @@ PROJECT_ROOT = os.path.dirname(API_DIR)
 
 # Construire le chemin vers le modèle
 MODEL_NAME = "UNetMini_DevSet_WithAug_AggressiveCB_v2_best.keras"
-MODEL_PATH = "models/{MODEL_NAME}" 
+MODEL_PATH = f"models/{MODEL_NAME}" 
 
 print(f"Chemin absolu calculé pour le modèle : {MODEL_PATH}") # Pour débogage
 
