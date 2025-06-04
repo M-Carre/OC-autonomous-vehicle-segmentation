@@ -20,7 +20,7 @@ API_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(API_DIR) 
 
 # Construire le chemin vers le modèle
-MODEL_NAME = "UNetMini_DevSet_WithAug_AggressiveCB_v2_best.keras"
+MODEL_NAME = "UNetMini_WithAug_CustomFuncs_EagerDebug_best_checkpoint.keras"
 MODEL_PATH = f"models/{MODEL_NAME}" 
 
 print(f"Chemin absolu calculé pour le modèle : {MODEL_PATH}") # Pour débogage
