@@ -32,6 +32,8 @@ jobs:
     steps:
       - name: Checkout du code source
         uses: actions/checkout@v3
+        with:
+          lfs: true
 
       - name: Configuration de Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v4

@@ -31,4 +31,4 @@ EXPOSE 8000
 # Vous pouvez utiliser un script de démarrage (entrypoint.sh) qui gère cela,
 # ou Azure App Service vous permet de spécifier la commande de démarrage dans sa configuration.
 # La commande CMD ici est souvent celle pour le test local ou une commande de base.
-CMD ["gunicorn", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "main:app", "--bind", "0.0.0.0:8000"]
+CMD ["gunicorn", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "main:app", "--bind", "0.0.0.0:8000", "--timeout", "120"]
